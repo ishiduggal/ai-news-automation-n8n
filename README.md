@@ -40,3 +40,16 @@ Split Articles
 News Database
        ↓
 Telegram Delivery
+## 📸 Project Screenshots
+
+### 🔄 Complete n8n Automation Workflow
+
+<img src="./docs/screenshots/architecture.png" alt="Complete n8n Automation Workflow" width="100%">
+
+### 📱 Automated Telegram News Delivery
+
+<img src="./docs/screenshots/telegram-output.png" alt="Telegram News Delivery" width="500">
+
+### 🗄️ News History Database
+
+<img src="./docs/screenshots/database.png" alt="News History Database" width="100%">
