@@ -11,13 +11,13 @@ This project automates the complete process of discovering and delivering releva
 Instead of manually searching through dozens of articles every morning, the workflow automatically:
 
 - Fetches the latest AI-related news
-- Processes the articles using an LLM
+- Processes articles using an LLM
 - Evaluates relevance, impact, freshness, source quality, and uniqueness
 - Selects the strongest stories
 - Converts the output into structured JSON
 - Generates unique article IDs programmatically
-- Stores the selected articles in a database
-- Sends the final news to Telegram
+- Stores selected articles in a database
+- Sends formatted news to Telegram
 - Runs automatically on a scheduled basis
 
 ---
@@ -25,50 +25,18 @@ Instead of manually searching through dozens of articles every morning, the work
 ## 🏗️ System Architecture
 
 ```text
-                    ┌──────────────────┐
-                    │  Schedule Trigger │
-                    └────────┬─────────┘
-                             ↓
-                    ┌──────────────────┐
-                    │  NewsData.io API │
-                    └────────┬─────────┘
-                             ↓
-                    ┌──────────────────┐
-                    │   LLM Processing │
-                    │   News Selection │
-                    └────────┬─────────┘
-                             ↓
-                    ┌──────────────────┐
-                    │ JSON Formatting  │
-                    └────────┬─────────┘
-                             ↓
-                    ┌──────────────────┐
-                    │ JavaScript Code  │
-                    │ Article IDs      │
-                    └────────┬─────────┘
-                             ↓
-                    ┌──────────────────┐
-                    │    Split Out     │
-                    └────────┬─────────┘
-                             ↓
-                    ┌──────────────────┐
-                    │   News Database  │
-                    └────────┬─────────┘
-                             ↓
-                    ┌──────────────────┐
-                    │ Telegram Delivery│
-                    └──────────────────┘
-
-## 📸 Project Screenshots
-
-### 🔄 n8n Automation Workflow
-
-![n8n Automation Workflow](./docs/screenshots/architecture.png)
-
-### 📱 Telegram News Delivery
-
-![Telegram News Delivery](./docs/screenshots/telegram-output.png)
-
-### 🗄️ News Database
-
-![News Database](./docs/screenshots/database.png)
+Schedule Trigger
+       ↓
+NewsData.io API
+       ↓
+AI News Analysis
+       ↓
+News Database Formatter
+       ↓
+JavaScript Processing
+       ↓
+Split Articles
+       ↓
+News Database
+       ↓
+Telegram Delivery
