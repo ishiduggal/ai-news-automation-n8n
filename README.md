@@ -40,3 +40,8 @@ Split Articles
 News Database
        ↓
 Telegram Delivery
+<img src="docs/screenshots/architecture.png" alt="Complete n8n Automation Workflow" width="900"/>
+
+<img src="docs/screenshots/telegram-output.png" alt="Telegram News Delivery" width="500"/>
+
+<img src="docs/screenshots/database.png" alt="News History Database" width="900"/>
