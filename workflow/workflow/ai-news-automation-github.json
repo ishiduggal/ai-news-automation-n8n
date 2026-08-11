@@ -1,0 +1,418 @@
+{
+  "name": "newspulse",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 9
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "a4bd8f2b-c08d-4c00-b3cf-8a874b3e9bd9",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "url": "https://newsdata.io/api/1/latest",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "YOUR_REAL_API_KEY"
+            },
+            {
+              "name": "q",
+              "value": "artificial intelligence"
+            },
+            {
+              "name": "language",
+              "value": "en"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        224,
+        0
+      ],
+      "id": "105d844f-5ff0-4641-901e-e4ba1800e8d4",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Here are today's news articles:\n\n{{ JSON.stringify($json.results.map(article => ({\ntitle: article.title,\ndescription: article.description,\nurl: article.link,\nsource: article.source_name || article.source_id,\npublished: article.pubDate,\ncategory: article.category,\nsource_priority: article.source_priority,\narticle_id: article.article_id\n}))) }}\n\nYou are the Chief Editor of an AI-powered daily news intelligence service.\n\nYour job is NOT to simply summarize the articles.\n\nYour job is to decide which news is actually worth a reader's attention.\n\nEvaluate every article using:\n\n1. RELEVANCE — Is this important to technology, AI, business, science, India or world affairs?\n2. IMPACT — Could this significantly affect people, companies, industries, governments or technology?\n3. FRESHNESS — Is this genuinely recent and timely?\n4. SOURCE QUALITY — Prefer credible and established news sources.\n5. UNIQUENESS — Avoid stories that are essentially duplicates of another story.\n\nGive each candidate an internal importance score from 0 to 10.\n\nThen select the 5 strongest and most useful stories.\n\nIMPORTANT RULES:\n\n- Do not invent facts.\n- Do not change the meaning of the original article.\n- Do not select stories just because the headline sounds exciting.\n- Prefer substance over clickbait.\n- Avoid celebrity gossip and trivial crime news unless globally significant.\n- Avoid promotional/company PR content unless it represents a genuinely important development.\n- Avoid duplicate stories covering the same event.\n- Try to maintain variety across categories.\n- Prefer AI, technology, science, business, India and major world affairs.\n\nFor each selected story, provide:\n\nCATEGORY\nTITLE\nSOURCE\nPUBLISHED\nSUMMARY\nWHY IT MATTERS\nIMPORTANCE SCORE\nREAD MORE\n\nThe \"WHY IT MATTERS\" section should explain in one simple sentence why a reader should care about this story.\n\nKeep each summary between 25 and 45 words.\n\nKeep the language simple, professional and factual.\n\nCreate the final Telegram digest using exactly this style:\n\n📰 AI DAILY INTELLIGENCE\n━━━━━━━━━━━━━━━━━━\n[DATE] • 5 STORIES\n\nFor each story:\n\n━━━━━━━━━━━━━━━━━━\n\n[EMOJI] [CATEGORY]\n\n1️⃣ [HEADLINE]\n\n📝 WHAT HAPPENED\n[25–45 word factual summary]\n\n💡 WHY IT MATTERS\n[One sentence explaining significance]\n\n🗞️ SOURCE: [SOURCE]\n⭐ IMPORTANCE: [SCORE]/10\n\n🔗 READ FULL STORY\n[URL]\n\nAfter all 5 stories:\n\n━━━━━━━━━━━━━━━━━━\n🤖 AI Daily News\n⚡ AI-curated • Automated",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        400,
+        0
+      ],
+      "id": "fab9aa18-bd89-4a08-adf1-f25aab306001",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        768,
+        176
+      ],
+      "id": "a8d58447-b793-44cf-8f4b-132887ae8ad6",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "tE9MfwUVJj7Pu25D",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "1270230976",
+        "text": "={{ $json.article_id }}\n📰 {{ $json.title }}\n\n📂 Category: {{ $json.category }}\n📰 Source: {{ $json.source }}\n⭐ Importance: {{ $json.importance_score }}\n\n🔗 {{ $json.url }}",
+        "additionalFields": {
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1776,
+        -16
+      ],
+      "id": "40ece981-bd8d-452d-9169-58437026a8a8",
+      "name": "Send a text message",
+      "webhookId": "90844c57-21f7-424e-bcb3-6b3fdf11f53b",
+      "credentials": {
+        "telegramApi": {
+          "id": "dgXcMHvTMRgAfOuq",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a data extraction assistant.\n\nYou will receive the final AI news digest.\n\nConvert the 5 selected news stories into clean structured JSON.\n\nReturn ONLY valid JSON.\n\nDo not include:\n- markdown\n- ```json\n- explanations\n- introductory text\n- concluding text\n\nReturn exactly this structure:\n\n{\n  \"articles\": [\n    {\n      \"article_id\": \"\",\n      \"title\": \"\",\n      \"category\": \"\",\n      \"source\": \"\",\n      \"url\": \"\",\n      \"importance_score\": 0,\n      \"published_at\": \"\"\n    }\n  ]\n}\n\nRules:\n\n- Return exactly 5 articles.\n- Preserve the original title.\n- Preserve the original URL.\n- Do not invent URLs.\n- importance_score must be a number from 0 to 10.\n- If article_id is unavailable, leave it as an empty string.\n- If published_at is unavailable, leave it as an empty string.\n\nHere is the news digest:\n\n{{ $json.text }}",
+        "messages": {
+          "messageValues": [
+            {
+              "type": "AIMessagePromptTemplate",
+              "message": "={   \"articles\": [     {       \"article_id\": \"alibaba-ai-model-newsbytes\",       \"title\": \"...\",       \"category\": \"...\",       \"source\": \"...\",       \"url\": \"...\",       \"importance_score\": 8     }   ] }"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        768,
+        0
+      ],
+      "id": "9e12ff32-1cac-479f-b7bc-80a4a5a675e5",
+      "name": "News Database Formatter"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        416,
+        208
+      ],
+      "id": "2f45925c-a035-452b-a1ae-c2d2439e0ddb",
+      "name": "Groq Chat Model1",
+      "credentials": {
+        "groqApi": {
+          "id": "tE9MfwUVJj7Pu25D",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "sDufAh9ULkpaUXcF",
+          "mode": "list",
+          "cachedResultName": "News history",
+          "cachedResultUrl": "/projects/Y7cnVFsMFjI8bHYE/datatables/sDufAh9ULkpaUXcF"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "article_id": "={{ $json.articles.article_id }}",
+            "title": "={{ $json.articles.title }}",
+            "importance_score": "={{ $json.articles.importance_score }}",
+            "category": "={{ $json.articles.category }}",
+            "source": "={{ $json.articles.source }}",
+            "url": "={{ $json.articles.url }}",
+            "published_at": "={{ $json.articles.published_at }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "article_id",
+              "displayName": "article_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "category",
+              "displayName": "category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "source",
+              "displayName": "source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "url",
+              "displayName": "url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "importance_score",
+              "displayName": "importance_score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "published_at",
+              "displayName": "published_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "sent_at",
+              "displayName": "sent_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1552,
+        0
+      ],
+      "id": "130e9bbe-5a69-4a8b-9728-b46116958c2d",
+      "name": "Insert row"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "articles",
+        "include": "allOtherFields",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        1280,
+        0
+      ],
+      "id": "533b5951-74d2-4e9a-9fac-0174fa3ec7f4",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $json.text;\n\nlet data;\n\nif (typeof raw === 'string') {\n  let cleaned = raw.trim();\n\n  cleaned = cleaned\n    .replace(/^```json\\s*/i, '')\n    .replace(/^```\\s*/i, '')\n    .replace(/\\s*```$/i, '')\n    .trim();\n\n  data = JSON.parse(cleaned);\n} else {\n  data = raw;\n}\n\nfunction slugify(text) {\n  return String(text || '')\n    .toLowerCase()\n    .normalize('NFKD')\n    .replace(/[^\\w\\s-]/g, '')\n    .trim()\n    .replace(/\\s+/g, '-')\n    .replace(/-+/g, '-')\n    .slice(0, 70);\n}\n\ndata.articles = data.articles.map(article => {\n  const title = slugify(article.title);\n  const source = slugify(article.source);\n\n  return {\n    ...article,\n    article_id: `${title}-${source}`\n  };\n});\n\nreturn [\n  {\n    json: data\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1072,
+        0
+      ],
+      "id": "97710c7d-c0ba-40e5-8252-954980bc8b2b",
+      "name": "Code in JavaScript"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "News Database Formatter",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "News Database Formatter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "News Database Formatter": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Insert row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert row": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "8ad45887-5a1e-4cbb-96ba-b37e4ac0d78c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "4789397430b4420c58967f830f3a8e2a1f70c4a4bcc1663b5768df1aef224b9e"
+  },
+  "nodeGroups": [],
+  "id": "uHL6YbOWNmcdhgWy",
+  "tags": []
+}
