@@ -58,3 +58,19 @@ Instead of manually searching through dozens of articles every morning, the work
                     ┌──────────────────┐
                     │ Telegram Delivery│
                     └──────────────────┘
+
+
+
+## 📸 Project Screenshots
+
+### 🔄 n8n Automation Workflow
+
+![n8n Workflow](docs/screenshots/architecture.png)
+
+### 📱 Telegram News Delivery
+
+![Telegram Output](docs/screenshots/telegram-output.png)
+
+### 🗄️ News Database
+
+![News Database](docs/screenshots/database.png)
