@@ -1,34 +1,60 @@
 # 🤖 AI News Automation with n8n
 
-An automated AI-powered news intelligence pipeline built with n8n.
+> An automated AI-powered news intelligence pipeline that collects the latest AI news, evaluates and structures it using LLMs, stores the results in a database, and delivers formatted news updates through Telegram.
 
-The system collects news, processes and structures it using AI, stores the results in a database, and automatically delivers formatted news updates through Telegram.
+---
 
-## 🚀 Features
+## 🚀 Project Overview
 
-- Automated news collection
-- AI-powered news processing
-- Structured JSON generation
-- Automatic article ID generation
-- Individual article processing
-- Database storage
-- Automated Telegram delivery
-- Scheduled execution
-- HTML-formatted Telegram messages
+This project automates the complete process of discovering and delivering relevant AI news.
 
-## 🏗️ Architecture
+Instead of manually searching through dozens of articles every morning, the workflow automatically:
+
+- Fetches the latest AI-related news
+- Processes the articles using an LLM
+- Evaluates relevance, impact, freshness, source quality, and uniqueness
+- Selects the strongest stories
+- Converts the output into structured JSON
+- Generates unique article IDs programmatically
+- Stores the selected articles in a database
+- Sends the final news to Telegram
+- Runs automatically on a scheduled basis
+
+---
+
+## 🏗️ System Architecture
 
 ```text
-Schedule Trigger
-       ↓
-   News Source
-       ↓
-   AI Processing
-       ↓
- JSON Parser / Code
-       ↓
-    Split Out
-       ↓
- Database Storage
-       ↓
- Telegram Delivery
+                    ┌──────────────────┐
+                    │  Schedule Trigger │
+                    └────────┬─────────┘
+                             ↓
+                    ┌──────────────────┐
+                    │  NewsData.io API │
+                    └────────┬─────────┘
+                             ↓
+                    ┌──────────────────┐
+                    │   LLM Processing │
+                    │   News Selection │
+                    └────────┬─────────┘
+                             ↓
+                    ┌──────────────────┐
+                    │ JSON Formatting  │
+                    └────────┬─────────┘
+                             ↓
+                    ┌──────────────────┐
+                    │ JavaScript Code  │
+                    │ Article IDs      │
+                    └────────┬─────────┘
+                             ↓
+                    ┌──────────────────┐
+                    │    Split Out     │
+                    └────────┬─────────┘
+                             ↓
+                    ┌──────────────────┐
+                    │   News Database  │
+                    └────────┬─────────┘
+                             ↓
+                    ┌──────────────────┐
+                    │ Telegram Delivery│
+                    └──────────────────┘
